@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quorum</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #faf8f5;
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --accent: #2a2a2a;
+    --line: #e2ddd5;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 2rem; }
+
+  h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.15; }
+
+  /* Logo */
+  .logo {
+    width: 200px;
+    height: auto;
+    margin-bottom: 2.5rem;
+  }
+  /* Logo circles assemble in one by one */
+  .logo circle {
+    opacity: 0;
+    transform: scale(0.4);
+    transform-origin: center;
+    transform-box: fill-box;
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .logo.assembled circle { opacity: 1; transform: none; }
+  /* White rectangle fades in last */
+  .logo .plate {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .logo.assembled .plate { opacity: 1; }
+
+  /* Hero */
+  .hero {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6rem 0;
+  }
+  .hero .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 { font-size: clamp(2.8rem, 7vw, 5.5rem); margin-bottom: 1.5rem; }
+  .hero p { font-size: 1.15rem; color: var(--muted); max-width: 46ch; }
+
+  /* Sections */
+  section { padding: 6rem 0; position: relative; }
+  /* Animated top border that draws in from the left */
+  section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--line);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  section.border-drawn::before { transform: scaleX(1); }
+  section h2 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 1rem; }
+  .lead { color: var(--muted); max-width: 52ch; margin-bottom: 3rem; font-size: 1.05rem; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2.5rem;
+  }
+  .card { position: relative; }
+  .card h3 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+  .card p { color: var(--muted); font-size: 0.95rem; }
+  /* Oversized serif numeral as a quiet marker above each tenet */
+  .card .num {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 4.5rem;
+    line-height: 1;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 0.75rem;
+    transition: color 0.4s ease;
+  }
+  .card:hover .num { color: var(--muted); }
+
+  /* Form */
+  .form-section { max-width: 620px; }
+  .field { margin-bottom: 1.75rem; }
+  .field label {
+    display: block;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+  .field input,
+  .field textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 0.6rem 0;
+    font-family: var(--sans);
+    font-size: 1rem;
+    color: var(--ink);
+    transition: border-color 0.3s ease;
+  }
+  .field input:focus,
+  .field textarea:focus {
+    outline: none;
+    border-bottom-color: var(--ink);
+  }
+  .field textarea { resize: vertical; min-height: 100px; }
+  .field.invalid input,
+  .field.invalid textarea { border-bottom-color: #b3261e; }
+  .error-msg {
+    display: none;
+    color: #b3261e;
+    font-size: 0.78rem;
+    margin-top: 0.4rem;
+  }
+  .field.invalid .error-msg { display: block; }
+
+  button[type="submit"] {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 1rem 2.5rem;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+  }
+  button[type="submit"]:hover { opacity: 0.82; }
+
+  .success {
+    display: none;
+    padding: 1.25rem 1.5rem;
+    background: #eef1ec;
+    border-left: 2px solid var(--ink);
+    font-size: 0.95rem;
+  }
+  .success.show { display: block; }
+
+  /* Reveal animation */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    transition-delay: var(--reveal-delay, 0s);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+  /* No-JS fallback: content visible by default */
+  .no-js .reveal { opacity: 1; transform: none; }
+  .no-js .logo circle { opacity: 1; transform: none; }
+  .no-js .logo .plate { opacity: 1; }
+  .no-js section::before { transform: scaleX(1); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .logo circle { opacity: 1; transform: none; transition: none; }
+    .logo .plate { opacity: 1; transition: none; }
+    section::before { transform: scaleX(1); transition: none; }
+  }
+</style>
+</head>
+<body class="no-js">
+
+<div class="wrap">
+
+  <header class="hero">
+    <!-- Logo: white stars carved out with black circles -->
+    <svg class="logo" viewBox="0 0 4656 2328" fill="none" role="img" aria-label="Quorum">
+      <rect class="plate" x="582.761" y="579.718" width="3490.48" height="1168.56" fill="white"/>
+      <circle cx="1746" cy="1746" r="582" fill="black"/>
+      <circle cx="1746" cy="582" r="582" fill="black"/>
+      <circle cx="582" cy="582" r="582" fill="black"/>
+      <circle cx="2910" cy="582" r="582" fill="black"/>
+      <circle cx="2910" cy="1746" r="582" fill="black"/>
+      <circle cx="4074" cy="1746" r="582" fill="black"/>
+      <circle cx="4074" cy="582" r="582" fill="black"/>
+      <circle cx="582" cy="1746" r="582" fill="black"/>
+    </svg>
+
+    <span class="eyebrow reveal">By Invitation</span>
+    <h1 class="reveal">An open door<br>to a closed circle.</h1>
+    <p class="reveal">The Quorum takes its name from the number whose presence makes a gathering complete. That is who we are: a community aligned in its ideals, measured in its actions, and united by the conviction to live by what we share.</p>
+  </header>
+
+  <section>
+    <h2 class="reveal">Our Tenets</h2>
+    <p class="lead reveal">More than a membership — a community held together by what we believe and the standards we keep.</p>
+    <div class="grid">
+      <div class="card reveal">
+        <span class="num">01</span>
+        <h3>Conviction</h3>
+        <p>Shared ideals — refinement, restraint, and intention — and the discipline to live by them, in private and in company.</p>
+      </div>
+      <div class="card reveal">
+        <span class="num">02</span>
+        <h3>Commitment</h3>
+        <p>To belong is to be counted — to lend your presence and hold the whole, and yourself, to the standards we keep.</p>
+      </div>
+      <div class="card reveal">
+        <span class="num">03</span>
+        <h3>Communion</h3>
+        <p>When we convene, Quorum is met — and ideas, ideals, and common purpose are renewed together.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <h2 class="reveal">Ask to Be Counted</h2>
+    <p class="lead reveal">Membership is intentionally small and offered by invitation — every place matters to the whole. Tell us what you believe in to reach Quorum.</p>
+
+    <form id="inquiry" class="reveal" novalidate>
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required>
+        <span class="error-msg">Please enter your name.</span>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+        <span class="error-msg">Please enter a valid email address.</span>
+      </div>
+      <div class="field">
+        <label for="message">What you stand for</label>
+        <textarea id="message" name="message" required></textarea>
+        <span class="error-msg">Please share a little about what you believe in and why you'd belong here.</span>
+      </div>
+      <button type="submit">Ask to be counted</button>
+    </form>
+
+    <div class="success" id="success">
+      Thank you — your request has been received. We'll be in touch when there is a place for you among us.
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Swap no-js for js as soon as script runs
+  document.body.classList.remove('no-js');
+
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // --- Staggered reveals: give grouped siblings a cascading delay ---
+  document.querySelectorAll('.grid').forEach(grid => {
+    grid.querySelectorAll('.reveal').forEach((el, i) => {
+      el.style.setProperty('--reveal-delay', (i * 0.12) + 's');
+    });
+  });
+
+  // --- Hero: cascade in on page load rather than waiting on scroll ---
+  const heroReveals = document.querySelectorAll('.hero .reveal');
+  const logo = document.querySelector('.logo');
+
+  if (!prefersReduced) {
+    const circles = logo.querySelectorAll('circle');
+    const plate = logo.querySelector('.plate');
+    requestAnimationFrame(() => {
+      // Assemble the circles first
+      circles.forEach((c, i) => {
+        c.style.transitionDelay = (i * 0.08) + 's';
+      });
+      // White rectangle fades in last, after all circles have landed
+      const plateDelay = circles.length * 0.08 + 0.15;
+      plate.style.transitionDelay = plateDelay + 's';
+
+      logo.classList.add('assembled');
+
+      // Then cascade the hero text, offset to begin as the plate finishes
+      const textStart = plateDelay + 0.4;
+      heroReveals.forEach((el, i) => {
+        el.style.setProperty('--reveal-delay', (textStart + i * 0.12) + 's');
+        el.classList.add('visible');
+      });
+    });
+  } else {
+    logo.classList.add('assembled');
+    heroReveals.forEach(el => el.classList.add('visible'));
+  }
+
+  // --- Scroll-fade reveals + section-border draw below the hero ---
+  if (!prefersReduced && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => {
+      if (!el.closest('.hero')) observer.observe(el);
+    });
+
+    // Section borders draw in slightly before their content reveals
+    const borderObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('border-drawn');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0, rootMargin: '0px 0px -10% 0px' });
+
+    document.querySelectorAll('section').forEach(s => borderObserver.observe(s));
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+    document.querySelectorAll('section').forEach(s => s.classList.add('border-drawn'));
+  }
+
+  // Form validation + fake submit
+  const form = document.getElementById('inquiry');
+  const success = document.getElementById('success');
+
+  const validators = {
+    name: v => v.trim().length > 0,
+    email: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
+    message: v => v.trim().length > 0,
+  };
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    let valid = true;
+
+    Object.keys(validators).forEach(id => {
+      const input = document.getElementById(id);
+      const field = input.closest('.field');
+      if (!validators[id](input.value)) {
+        field.classList.add('invalid');
+        valid = false;
+      } else {
+        field.classList.remove('invalid');
+      }
+    });
+
+    if (valid) {
+      form.style.display = 'none';
+      success.classList.add('show');
+    }
+  });
+
+  // Clear error state as the user corrects a field
+  form.querySelectorAll('input, textarea').forEach(el => {
+    el.addEventListener('input', () => {
+      const field = el.closest('.field');
+      if (field.classList.contains('invalid')) {
+        const id = el.id;
+        if (validators[id](el.value)) field.classList.remove('invalid');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
