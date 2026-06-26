@@ -268,6 +268,11 @@
         <textarea id="message" name="message" required></textarea>
         <span class="error-msg">Please share a little about what you believe in and why you'd belong here.</span>
       </div>
+      <div class="field">
+        <label for="offering">What are you willing to offer to make the circle whole?</label>
+        <textarea id="offering" name="offering" required></textarea>
+        <span class="error-msg">Please tell us what you are willing to offer.</span>
+      </div>
       <button type="submit">Ask to be counted</button>
     </form>
 
@@ -360,6 +365,7 @@
     name: v => v.trim().length > 0,
     email: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
     message: v => v.trim().length > 0,
+    offering: v => v.trim().length > 0,
   };
 
   form.addEventListener('submit', e => {
